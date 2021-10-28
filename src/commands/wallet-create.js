@@ -1,6 +1,4 @@
 /*
-  Creates new wallet. Save the 12-word Mnemonic private key to a .json file.
-  http://zh.thedev.id/mastering-bitcoin-cash/3-keys-addresses-wallets.html
 
 */
 
@@ -14,10 +12,10 @@ const BchWallet = require('minimal-slp-wallet/index')
 const WalletUtil = require('../lib/wallet-util')
 const WalletService = require('../lib/adapters/wallet-service')
 
-const { Command, flags } = require('@oclif/command')
+const {Command, flags} = require('@oclif/command')
 
 class WalletCreate extends Command {
-  constructor (argv, config) {
+  constructor(argv, config) {
     super(argv, config)
 
     // Encapsulate dependencies.
@@ -25,9 +23,9 @@ class WalletCreate extends Command {
     this.BchWallet = BchWallet
   }
 
-  async run () {
+  async run() {
     try {
-      const { flags } = this.parse(WalletCreate)
+      const {flags} = this.parse(WalletCreate)
 
       // Validate input flags
       this.validateFlags(flags)
@@ -51,7 +49,7 @@ class WalletCreate extends Command {
   }
 
   // Create a new wallet file.
-  async createWallet (filename, desc) {
+  async createWallet(filename, desc) {
     try {
       if (!filename || typeof filename !== 'string') {
         throw new Error('filename required.')
@@ -64,7 +62,7 @@ class WalletCreate extends Command {
       const advancedConfig = {
         interface: 'json-rpc',
         jsonRpcWalletService: walletService,
-        noUpdate: true
+        noUpdate: true,
       }
 
       // Wait for the wallet to be created.
@@ -75,7 +73,7 @@ class WalletCreate extends Command {
 
       // Create the initial wallet JSON object.
       const walletData = {
-        wallet: this.bchWallet.walletInfo
+        wallet: this.bchWallet.walletInfo,
       }
       walletData.wallet.description = desc
 
@@ -90,7 +88,7 @@ class WalletCreate extends Command {
   }
 
   // Validate the proper flags are passed in.
-  validateFlags (flags) {
+  validateFlags(flags) {
     // Exit if wallet not specified.
     const name = flags.name
     if (!name || name === '') {
@@ -104,11 +102,11 @@ class WalletCreate extends Command {
 WalletCreate.description = 'Generate a new HD Wallet.'
 
 WalletCreate.flags = {
-  name: flags.string({ char: 'n', description: 'Name of wallet' }),
+  name: flags.string({char: 'n', description: 'Name of wallet'}),
   description: flags.string({
     char: 'd',
-    description: 'Description of the wallet'
-  })
+    description: 'Description of the wallet',
+  }),
 }
 
 module.exports = WalletCreate
