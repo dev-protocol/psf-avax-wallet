@@ -1,7 +1,7 @@
 {
   "name": "psf-avax-wallet",
   "description": "A command line (CLI) wallet app for working with AVAX X-Chain tokens. Uses services over IPFS.",
-  "version": "v2.0.0",
+  "version": "v1.0.0",
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "contributors": [
     "Gary Nadir"
