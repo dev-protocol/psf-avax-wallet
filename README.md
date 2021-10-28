@@ -1,8 +1,8 @@
-# psf-bch-wallet
+# psf-avax-wallet
 
-This is a command-line (CLI) app for working with the Bitcoin Cash (BCH) blockchain, and SLP tokens.
+This is a command-line (CLI) app for working with the Avalanche X-Chain (AVAX) blockchain, and their Avalanche Native Token (ANT).
 
-This app connects to a [ipfs-bch-wallet-service](https://github.com/Permissionless-Software-Foundation/ipfs-bch-wallet-service) over [IPFS](https://ipfs.io), using the [ipfs-coord](https://github.com/Permissionless-Software-Foundation/ipfs-coord) library. This app uses the [oclif CLI framework](https://oclif.io/).
+This app connects to a [ipfs-avax-wallet-service](https://github.com/Permissionless-Software-Foundation/ipfs-bch-wallet-service) over [IPFS](https://ipfs.io), using the [ipfs-coord](https://github.com/Permissionless-Software-Foundation/ipfs-coord) library. This app uses the [oclif CLI framework](https://oclif.io/).
 
 - [(Video) How to Install and Use](https://youtu.be/45YEeZi_8Kc)
 
