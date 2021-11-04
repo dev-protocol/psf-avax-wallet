@@ -41,9 +41,7 @@ describe('wallet-addrs', () => {
       const result = await uut.getAddrs(filename)
       console.log('result: ', result)
 
-      assert.property(result, 'cashAddress')
-      assert.property(result, 'slpAddress')
-      assert.property(result, 'legacyAddress')
+      assert.property(result, 'address')
     })
 
     it('should throw an error if wallet not found', async () => {
@@ -83,10 +81,8 @@ describe('wallet-addrs', () => {
       sandbox.stub(uut, 'parse').returns({ flags: flags })
 
       const result = await uut.run()
-      // console.log('result', result)
-      assert.property(result, 'cashAddress')
-      assert.property(result, 'slpAddress')
-      assert.property(result, 'legacyAddress')
+
+      assert.property(result, 'address')
     })
 
     it('should handle an error without a name', async () => {

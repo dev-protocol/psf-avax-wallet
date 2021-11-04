@@ -6,6 +6,6 @@
 /orbitdb
 /ipfsdata
 /coverage
-/.wallets
+/.wallets/*
 node_modules
 /.ipfsdata
