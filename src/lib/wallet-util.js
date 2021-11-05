@@ -24,6 +24,16 @@ class WalletUtil {
     return true
   }
 
+  // Save the wallet data into a .json text file.
+  async walletExists (filename) {
+    try {
+      await _this.fs.open(filename)
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
   // Generates an array of HD addresses.
   // Address are generated from index to limit.
   // e.g. generateAddress(walletData, 20, 10)

@@ -6,11 +6,10 @@
 
 // Public NPM libraries
 // const BCHJS = require('@psf/bch-js')
-const BchWallet = require('minimal-slp-wallet/index')
+const AvaxWallet = require('minimal-avax-wallet/index')
 
 // Local libraries
 const WalletUtil = require('../lib/wallet-util')
-const WalletService = require('../lib/adapters/wallet-service')
 
 const { Command, flags } = require('@oclif/command')
 
@@ -20,7 +19,7 @@ class WalletCreate extends Command {
 
     // Encapsulate dependencies.
     this.walletUtil = new WalletUtil()
-    this.BchWallet = BchWallet
+    this.AvaxWallet = AvaxWallet
   }
 
   async run () {
@@ -40,9 +39,9 @@ class WalletCreate extends Command {
       // console.log('result: ', result)
 
       return result
-    } catch (err) {
-      if (err.message) console.log(err.message)
-      else console.log('Error in create-wallet.js/run(): ', err)
+    } catch (error) {
+      if (error.message) console.log(error.message)
+      else console.log('Error in create-wallet.js/run():', error)
 
       return 0
     }
@@ -55,25 +54,27 @@ class WalletCreate extends Command {
         throw new Error('filename required.')
       }
 
+      // check if wallet name is taken
+      const exists = await this.walletUtil.walletExists(filename)
+      if (exists) {
+        throw new Error('filename already exist')
+      }
+
       if (!desc) desc = ''
 
       // Configure the minimal-slp-wallet library to use the JSON RPC over IPFS.
-      const walletService = new WalletService()
       const advancedConfig = {
         interface: 'json-rpc',
-        jsonRpcWalletService: walletService,
         noUpdate: true
       }
 
       // Wait for the wallet to be created.
-      this.bchWallet = new this.BchWallet(undefined, advancedConfig)
-      await this.bchWallet.walletInfoPromise
-
-      // console.log('bchWallet.walletInfo: ', this.bchWallet.walletInfo)
+      this.avaxWallet = new this.AvaxWallet(undefined, advancedConfig)
+      await this.avaxWallet.walletInfoPromise
 
       // Create the initial wallet JSON object.
       const walletData = {
-        wallet: this.bchWallet.walletInfo
+        wallet: this.avaxWallet.walletInfo
       }
       walletData.wallet.description = desc
 
@@ -81,9 +82,9 @@ class WalletCreate extends Command {
       await this.walletUtil.saveWallet(filename, walletData)
 
       return walletData.wallet
-    } catch (err) {
-      if (err.code !== 'EEXIT') console.log('Error in createWallet().')
-      throw err
+    } catch (error) {
+      if (error.code !== 'EEXIT') console.log('Error in createWallet().')
+      throw error
     }
   }
 
@@ -99,7 +100,7 @@ class WalletCreate extends Command {
   }
 }
 
-WalletCreate.description = 'Generate a new HD Wallet.'
+WalletCreate.description = 'Generate a new single address Wallet.'
 
 WalletCreate.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' }),
