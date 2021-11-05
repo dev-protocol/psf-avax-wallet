@@ -29,7 +29,8 @@ class WalletCreate extends Command {
       // Validate input flags
       this.validateFlags(flags)
 
-      const filename = `${__dirname.toString()}/../../.wallets/${flags.name
+      const filename = `${__dirname.toString()}/../../.wallets/${
+        flags.name
       }.json`
 
       if (!flags.description) flags.description = ''
