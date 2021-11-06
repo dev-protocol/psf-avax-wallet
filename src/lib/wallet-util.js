@@ -27,7 +27,7 @@ class WalletUtil {
   // Save the wallet data into a .json text file.
   async walletExists (filename) {
     try {
-      await _this.fs.open(filename)
+      await _this.fs.access(filename)
       return true
     } catch (error) {
       return false
