@@ -9,8 +9,7 @@ const sinon = require('sinon')
 const fs = require('fs').promises
 
 const WalletBalances = require('../../../src/commands/wallet-balances')
-const BchWalletMock = require('../../mocks/msw-mock')
-const WalletServiceMock = require('../../mocks/wallet-service-mock.js')
+const AvalancheWallet = require('../../mocks/avax-mock')
 const WalletCreate = require('../../../src/commands/wallet-create')
 const walletCreate = new WalletCreate()
 
@@ -40,24 +39,18 @@ describe('wallet-balances', () => {
 
   describe('#displayBalance', () => {
     it('should display wallet balances', () => {
-      const mockWallet = new BchWalletMock()
-      // console.log('mockWallet: ', mockWallet)
+      const mockWallet = new AvalancheWallet()
 
       const result = uut.displayBalance(mockWallet)
-
       assert.equal(result, true)
     })
 
     it('should display verbose UTXO data when flag is set', () => {
-      const mockWallet = new BchWalletMock()
-      // console.log('mockWallet: ', mockWallet)
+      const mockWallet = new AvalancheWallet()
 
-      const flags = {
-        verbose: true
-      }
+      const flags = { verbose: true }
 
       const result = uut.displayBalance(mockWallet, flags)
-
       assert.equal(result, true)
     })
 
@@ -65,7 +58,7 @@ describe('wallet-balances', () => {
       try {
         uut.displayBalance()
 
-        assert.fail('Unexpected code path')
+        assert.fail('Unexpected result')
       } catch (err) {
         // console.log(err)
         assert.include(err.message, 'Cannot read property')
@@ -74,17 +67,15 @@ describe('wallet-balances', () => {
   })
 
   describe('#getBalances', () => {
-    it('should return wallet instance with updated UTXOs', async () => {
+    it('should return wallet instance with updated UTXOs and assets', async () => {
       // Mock dependencies
-      uut.walletService = new WalletServiceMock()
-      uut.BchWallet = BchWalletMock
-
+      uut.AvaxWallet = AvalancheWallet
       const result = await uut.getBalances(filename)
-      // console.log('result: ', result)
 
       assert.property(result, 'walletInfo')
       assert.property(result, 'utxos')
       assert.property(result.utxos, 'utxoStore')
+      assert.property(result.utxos, 'assets')
     })
 
     // Dev Note: Because this test manipulates environment variables that effect
@@ -92,15 +83,14 @@ describe('wallet-balances', () => {
     it('should throw an error on network error', async () => {
       try {
         // Mock dependencies
-        uut.walletService = new WalletServiceMock()
-        uut.BchWallet = BchWalletMock
+        uut.AvaxWallet = AvalancheWallet
         process.env.NO_UTXO = true
 
         await uut.getBalances(filename)
 
         process.env.NO_UTXO = false
 
-        assert.fail('Unexpected code path')
+        assert.fail('Unexpected result')
       } catch (err) {
         assert.include(err.message, 'UTXOs failed to update. Try again.')
       }
@@ -127,14 +117,14 @@ describe('wallet-balances', () => {
 
   describe('#run', () => {
     it('should execute the run function', async () => {
-      // Mock dependencies
+      // Mock methods that will be tested elsewhere.
       sandbox.stub(uut, 'getBalances').resolves({})
       sandbox.stub(uut, 'displayBalance').resolves({})
 
       const flags = {
         name: 'test123'
       }
-      // Mock methods that will be tested elsewhere.
+
       sandbox.stub(uut, 'parse').returns({ flags: flags })
 
       const result = await uut.run()
@@ -150,76 +140,4 @@ describe('wallet-balances', () => {
       assert.equal(result, 0)
     })
   })
-
-  // describe('#run()', () => {
-  //   it('should run the run() function', async () => {
-  //     // Mock dependencies
-  //     uut.BchWallet = BchWalletMock
-  //
-  //     const flags = {
-  //       name: 'test123'
-  //     }
-  //     // Mock methods that will be tested elsewhere.
-  //     sandbox.stub(uut, 'parse').returns({ flags: flags })
-  //
-  //     const walletData = await uut.run()
-  //     // console.log('walletData: ', walletData)
-  //
-  //     assert.property(walletData, 'mnemonic')
-  //     assert.property(walletData, 'privateKey')
-  //     assert.property(walletData, 'publicKey')
-  //     assert.property(walletData, 'address')
-  //     assert.property(walletData, 'cashAddress')
-  //     assert.property(walletData, 'slpAddress')
-  //     assert.property(walletData, 'legacyAddress')
-  //     assert.property(walletData, 'hdPath')
-  //     assert.property(walletData, 'description')
-  //
-  //     // Clean up.
-  //     await fs.rm(filename)
-  //   })
-  //
-  //   it('should return 0 and display error.message on empty flags', async () => {
-  //     sandbox.stub(uut, 'parse').returns({ flags: {} })
-  //
-  //     const result = await uut.run()
-  //
-  //     assert.equal(result, 0)
-  //   })
-  //
-  //   it('should handle an error without a message', async () => {
-  //     sandbox.stub(uut, 'parse').throws({})
-  //
-  //     const result = await uut.run()
-  //
-  //     assert.equal(result, 0)
-  //   })
-  //
-  //   it('should add a description when provided', async () => {
-  //     // Mock dependencies
-  //     uut.BchWallet = BchWalletMock
-  //
-  //     const flags = {
-  //       name: 'test123',
-  //       description: 'test'
-  //     }
-  //     // Mock methods that will be tested elsewhere.
-  //     sandbox.stub(uut, 'parse').returns({ flags: flags })
-  //
-  //     const walletData = await uut.run()
-  //
-  //     assert.property(walletData, 'mnemonic')
-  //     assert.property(walletData, 'privateKey')
-  //     assert.property(walletData, 'publicKey')
-  //     assert.property(walletData, 'address')
-  //     assert.property(walletData, 'cashAddress')
-  //     assert.property(walletData, 'slpAddress')
-  //     assert.property(walletData, 'legacyAddress')
-  //     assert.property(walletData, 'hdPath')
-  //     assert.property(walletData, 'description')
-  //
-  //     // Clean up.
-  //     await fs.rm(filename)
-  //   })
-  // })
 })
