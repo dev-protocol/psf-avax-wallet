@@ -5,9 +5,11 @@
 'use strict'
 
 const shelljs = require('shelljs')
-// const Table = require('cli-table')
 
 const { Command, flags } = require('@oclif/command')
+
+// Local libraries
+const WalletUtil = require('../lib/wallet-util')
 
 class WalletAddrs extends Command {
   constructor (argv, config) {
@@ -15,6 +17,7 @@ class WalletAddrs extends Command {
 
     // Encapsulate dependencies.
     this.shelljs = shelljs
+    this.walletUtil = new WalletUtil()
   }
 
   async run () {
@@ -24,9 +27,7 @@ class WalletAddrs extends Command {
       // Validate input flags
       this.validateFlags(flags)
 
-      const filename = `${__dirname.toString()}/../../.wallets/${
-        flags.name
-      }.json`
+      const filename = `${__dirname.toString()}/../../.wallets/${flags.name}.json`
 
       return this.getAddrs(filename)
     } catch (err) {
@@ -35,18 +36,21 @@ class WalletAddrs extends Command {
     }
   }
 
-  getAddrs (filename) {
+  async getAddrs (filename) {
     try {
+      // check if wallet exists
+      const exists = await this.walletUtil.walletExists(filename)
+      if (!exists) {
+        throw new Error('wallet with the given name doent exists')
+      }
+
       // Load the wallet file.
       const walletJSON = require(filename)
       const walletData = walletJSON.wallet
-      // console.log('walletData: ', walletData)
 
-      console.log(' ')
-      console.log(`Cash Address: ${walletData.cashAddress}`)
-      console.log(`SLP Address: ${walletData.slpAddress}`)
-      console.log(`Legacy Address: ${walletData.legacyAddress}`)
-      console.log(' ')
+      this.log(' ')
+      this.log(`XChain Address: ${walletData.address}`)
+      this.log(' ')
       return walletData
     } catch (err) {
       console.error('Error in getAddrs()')
@@ -66,7 +70,7 @@ class WalletAddrs extends Command {
   }
 }
 
-WalletAddrs.description = 'List the different addresses for a wallet.'
+WalletAddrs.description = 'List the XChain address for a wallet.'
 
 WalletAddrs.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' })

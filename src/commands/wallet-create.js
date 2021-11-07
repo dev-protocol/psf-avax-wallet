@@ -1,11 +1,6 @@
-/*
-
-*/
-
 'use strict'
 
 // Public NPM libraries
-// const BCHJS = require('@psf/bch-js')
 const AvaxWallet = require('minimal-avax-wallet/index')
 
 // Local libraries
@@ -29,9 +24,7 @@ class WalletCreate extends Command {
       // Validate input flags
       this.validateFlags(flags)
 
-      const filename = `${__dirname.toString()}/../../.wallets/${
-        flags.name
-      }.json`
+      const filename = `${__dirname.toString()}/../../.wallets/${flags.name}.json`
 
       if (!flags.description) flags.description = ''
 
@@ -83,7 +76,7 @@ class WalletCreate extends Command {
 
       return walletData.wallet
     } catch (error) {
-      if (error.code !== 'EEXIT') console.log('Error in createWallet().')
+      if (error.code !== 'EEXIT') console.log('Error in createWallet():', error.message)
       throw error
     }
   }
