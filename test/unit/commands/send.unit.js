@@ -8,14 +8,15 @@ const assert = require('chai').assert
 const sinon = require('sinon')
 const fs = require('fs').promises
 
-const SendBch = require('../../../src/commands/send-bch')
-const SendBCHMock = require('../../mocks/send-bch-mock')
+const SendAsset = require('../../../src/commands/send')
+// const sendAssetMock = require('../../mocks/send-bch-mock')
+const AvalancheWallet = require('../../mocks/avax-mock')
 const WalletCreate = require('../../../src/commands/wallet-create')
 const walletCreate = new WalletCreate()
 
 const filename = `${__dirname.toString()}/../../../.wallets/test123.json`
 
-describe('send-bch', () => {
+describe('send', () => {
   let uut
   let sandbox
 
@@ -24,8 +25,7 @@ describe('send-bch', () => {
   })
   beforeEach(async () => {
     sandbox = sinon.createSandbox()
-
-    uut = new SendBch()
+    uut = new SendAsset()
   })
 
   afterEach(() => {
@@ -35,10 +35,10 @@ describe('send-bch', () => {
     await fs.rm(filename)
   })
 
-  describe('#sendBch()', () => {
+  describe('#sendAsset()', () => {
     it('should exit with error status if called without a filename.', async () => {
       try {
-        await uut.sendBch(undefined, undefined)
+        await uut.sendAsset(undefined, undefined)
 
         assert.fail('Unexpected result')
       } catch (err) {
@@ -49,19 +49,38 @@ describe('send-bch', () => {
         )
       }
     })
-    it('should exit with error status if bch balance is less that qty provided.', async () => {
+
+    it('should exit with error status if the given wallet doesnt exist', async () => {
       try {
+        await uut.sendAsset(`${__dirname.toString()}/../../../.wallets/test567.json`)
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.equal(
+          err.message,
+          'Wallet doesnt exists',
+          'Should throw expected error.'
+        )
+      }
+    })
+
+    it('should exit with error status if the wallet doesnt hold the asset', async () => {
+      try {
+        const mockWallet = new AvalancheWallet()
+
         const flags = {
           name: 'test123',
-          qty: 3,
-          sendAddr: 'bitcoincash:qpufm97hppty67chexq4p53vc29mzg437vwp7huaa3'
+          amount: 3,
+          assetId: '3LxJXtS6FYkSpcRLPu1EeGZDdFBY41J4YxH1Nwohxs2evUo1U',
+          sendAddr: mockWallet.walletInfo.address
         }
+
         // Mock methods that will be tested elsewhere.
         sandbox
           .stub(uut.walletBalances, 'getBalances')
-          .resolves(SendBCHMock.getBalancesResult)
+          .resolves(mockWallet)
 
-        await uut.sendBch(filename, flags)
+        await uut.sendAsset(filename, flags)
 
         assert.fail('Unexpected result')
       } catch (err) {
@@ -73,24 +92,53 @@ describe('send-bch', () => {
       }
     })
 
-    it('should send bch.', async () => {
+    it('should send the asset to the given address and return the txid.', async () => {
+      const mockWallet = new AvalancheWallet()
+
       const flags = {
         name: 'test123',
-        qty: 1,
-        sendAddr: 'bitcoincash:qpufm97hppty67chexq4p53vc29mzg437vwp7huaa3'
+        amount: 3,
+        assetId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+        sendAddr: mockWallet.walletInfo.address
       }
+
       // Mock methods that will be tested elsewhere.
       sandbox
         .stub(uut.walletBalances, 'getBalances')
-        .resolves(SendBCHMock.getBalancesResult)
+        .resolves(mockWallet)
 
-      const result = await uut.sendBch(filename, flags)
+      const result = await uut.sendAsset(filename, flags)
 
-      assert.isObject(result)
-      assert.property(result, 'success')
-      assert.property(result, 'status')
-      assert.property(result, 'endpoint')
-      assert.property(result, 'txid')
+      assert.isString(result)
+      assert.equal(result, 'someid')
+      assert.property(mockWallet, 'outputs')
+      assert.equal(mockWallet.outputs[0].address, mockWallet.walletInfo.address)
+      assert.equal(mockWallet.outputs[0].amount, 300)
+      assert.equal(mockWallet.outputs[0].assetID, '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5')
+    })
+
+    it('should send Avax if the assetId is not especified', async () => {
+      const mockWallet = new AvalancheWallet()
+
+      const flags = {
+        name: 'test123',
+        amount: 0.1,
+        sendAddr: mockWallet.walletInfo.address
+      }
+
+      // Mock methods that will be tested elsewhere.
+      sandbox
+        .stub(uut.walletBalances, 'getBalances')
+        .resolves(mockWallet)
+
+      const result = await uut.sendAsset(filename, flags)
+
+      assert.isString(result)
+      assert.equal(result, 'someid')
+      assert.property(mockWallet, 'outputs')
+      assert.equal(mockWallet.outputs[0].address, mockWallet.walletInfo.address)
+      assert.equal(mockWallet.outputs[0].amount, 100000000)
+      assert.equal(mockWallet.outputs[0].assetID, undefined)
     })
   })
 
@@ -98,8 +146,8 @@ describe('send-bch', () => {
     it('validateFlags() should return true .', () => {
       const flags = {
         name: 'test123',
-        qty: 1,
-        sendAddr: 'bitcoincash:qpufm97hppty67chexq4p53vc29mzg437vwp7huaa3'
+        amount: 1,
+        sendAddr: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
       }
       assert.equal(uut.validateFlags(flags), true, 'return true')
     })
@@ -116,7 +164,7 @@ describe('send-bch', () => {
         )
       }
     })
-    it('validateFlags() should throw error if qty is not supplied.', () => {
+    it('validateFlags() should throw error if amount is not supplied.', () => {
       try {
         const flags = {
           name: 'test123'
@@ -125,7 +173,7 @@ describe('send-bch', () => {
       } catch (err) {
         assert.include(
           err.message,
-          'You must specify a quantity in BCH with the -q flag.',
+          'You must specify the asset quantity with the -q flag',
           'Expected error message.'
         )
       }
@@ -134,7 +182,7 @@ describe('send-bch', () => {
       try {
         const flags = {
           name: 'test123',
-          qty: 1
+          amount: 1
         }
         uut.validateFlags(flags)
       } catch (err) {
@@ -163,17 +211,18 @@ describe('send-bch', () => {
 
       assert.equal(result, 0)
     })
-    it('should return 0 , if the response return success property as false', async () => {
-      // Mock dependencies
+    it('should return 0 , if the sendAsset fails', async () => {
       const flags = {
         name: 'test123',
-        qty: 1,
-        sendAddr: 'bitcoincash:qpufm97hppty67chexq4p53vc29mzg437vwp7huaa3'
+        amount: 3,
+        assetId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+        sendAddr: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
       }
+
       // Mock methods that will be tested elsewhere.
       sandbox
         .stub(uut.walletBalances, 'getBalances')
-        .resolves(SendBCHMock.getBalancesResult2)
+        .rejects(new Error('Something went terribly wrong'))
 
       // Mock methods that will be tested elsewhere.
       sandbox.stub(uut, 'parse').returns({ flags: flags })
@@ -183,16 +232,19 @@ describe('send-bch', () => {
       assert.equal(result, 0)
     })
     it('should run the run() function', async () => {
-      // Mock dependencies
+      const mockWallet = new AvalancheWallet()
+
       const flags = {
         name: 'test123',
-        qty: 1,
-        sendAddr: 'bitcoincash:qpufm97hppty67chexq4p53vc29mzg437vwp7huaa3'
+        amount: 3,
+        assetId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+        sendAddr: mockWallet.walletInfo.address
       }
+
       // Mock methods that will be tested elsewhere.
       sandbox
         .stub(uut.walletBalances, 'getBalances')
-        .resolves(SendBCHMock.getBalancesResult)
+        .resolves(mockWallet)
 
       // Mock methods that will be tested elsewhere.
       sandbox.stub(uut, 'parse').returns({ flags: flags })
