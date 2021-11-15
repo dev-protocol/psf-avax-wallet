@@ -90,10 +90,11 @@ class WalletBalances extends Command {
       console.log('\nAssets:')
       const assets = walletData.utxos.assets
       for (const asset of assets) {
+        const amount = asset.amount * Math.pow(10, -(+asset.denomination))
         table.push([
           asset.assetID,
           asset.name,
-          asset.amount,
+          amount.toFixed(asset.denomination),
           asset.denomination
         ])
       }

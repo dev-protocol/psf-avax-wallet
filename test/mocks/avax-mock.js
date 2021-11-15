@@ -47,7 +47,7 @@ class AvalancheWallet {
         ],
         assets: [
           {
-            assetID: 'Avax',
+            assetID: 'AVAX',
             name: 'Avalanche',
             symbol: 'AVAX',
             denomination: 9,
@@ -67,6 +67,12 @@ class AvalancheWallet {
 
   async getUtxos () {
     return []
+  }
+
+  async send (outputs) {
+    // just for the sake of tests
+    this.outputs = outputs
+    return 'someid'
   }
 
   async listAssets () {
