@@ -1,5 +1,5 @@
 /*
-  Sends a quantity of avax or any ANT.
+  Burn a quantity of an asset
 */
 
 'use strict'
@@ -13,7 +13,7 @@ const WalletBalances = require('./wallet-balances')
 
 const { Command, flags } = require('@oclif/command')
 
-class SendAsset extends Command {
+class BurnAsset extends Command {
   constructor (argv, config) {
     super(argv, config)
 
@@ -25,26 +25,25 @@ class SendAsset extends Command {
 
   async run () {
     try {
-      const { flags } = this.parse(SendAsset)
+      const { flags } = this.parse(BurnAsset)
 
       // Validate input flags
       this.validateFlags(flags)
 
       const filename = `${__dirname.toString()}/../../.wallets/${flags.name}.json`
 
-      const txid = await this.sendAsset(filename, flags)
+      const txid = await this.burnAsset(filename, flags)
 
       return txid
     } catch (err) {
-      console.log('Error in send.js/sendAsset(): ', err.message)
+      console.log('Error in burn.js/run(): ', err)
 
       return 0
     }
   }
 
-  // Send an asset from the wallet implied by filename, and with the settings saved
-  // in the flags object.
-  async sendAsset (filename, flags) {
+  // Burn a quantity of assets.
+  async burnAsset (filename, flags) {
     try {
       // Input validation
       if (!filename || typeof filename !== 'string') {
@@ -57,30 +56,25 @@ class SendAsset extends Command {
       }
 
       const walletData = await this.walletBalances.getBalances(filename)
-
-      const asset = walletData.utxos.assets.find(item => {
-        return (!flags.assetID && item.assetID === 'AVAX') || item.assetID === flags.assetID
-      })
+      const asset = walletData.utxos.assets.find(item => item.assetID === flags.assetID)
 
       if (!asset) {
         throw new Error(
-          `Insufficient funds. You are trying to send ${flags.amount} ${flags.assetID}, but the wallet doesn't have any`
+          `Insufficient funds. You are trying to burn ${flags.amount} ${flags.assetID}, but the wallet doesn't have any`
         )
       }
 
       // parse it from base0 to the whole number (the equivalent of sats in BCH)
       const amount = parseFloat(flags.amount) * Math.pow(10, asset.denomination)
 
-      const outputs = [{
-        address: flags.sendAddr,
+      const txid = await walletData.burnTokens(
         amount,
-        assetID: flags.assetID
-      }]
+        flags.assetID
+      )
 
-      const txid = await walletData.send(outputs)
       return txid
     } catch (err) {
-      console.error('Error in sendAsset()')
+      console.error('Error in burnAsset()')
       throw err
     }
   }
@@ -96,30 +90,25 @@ class SendAsset extends Command {
     const amount = flags.amount
     if (isNaN(Number(amount))) {
       throw new TypeError(
-        'You must specify the asset quantity with the -q flag.'
+        'You must specify a asset amount with the -q flag.'
       )
     }
 
-    const sendAddr = flags.sendAddr
-    if (!sendAddr || sendAddr === '') {
-      throw new Error('You must specify a send-to address with the -a flag.')
+    const assetID = flags.assetID
+    if (!assetID || assetID === '') {
+      throw new Error('You must specify an asset Id with the -t flag.')
     }
 
     return true
   }
 }
 
-SendAsset.description = 'Send avalanche native assets and avax'
+BurnAsset.description = 'Burn a specific quantity of ANT or avax'
 
-SendAsset.flags = {
+BurnAsset.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' }),
-  amount: flags.string({ char: 'q', description: 'asset quantity to send' }),
-  sendAddr: flags.string({ char: 'a', description: 'XChain address to send to' }),
-  assetID: flags.string({
-    char: 't',
-    description: 'AssetID (default is avax)',
-    default: ''
-  })
+  amount: flags.string({ char: 'q', description: 'Quantity of ANT to burn' }),
+  assetID: flags.string({ char: 't', description: 'assetID of ANT to burn' })
 }
 
-module.exports = SendAsset
+module.exports = BurnAsset

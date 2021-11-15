@@ -75,6 +75,12 @@ class AvalancheWallet {
     return 'someid'
   }
 
+  async burnTokens (amount, assetID) {
+    // just for the sake of tests
+    this.outputs = [{ amount, assetID }]
+    return 'someburnid'
+  }
+
   async listAssets () {
     return [
       {

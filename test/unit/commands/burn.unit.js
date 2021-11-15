@@ -8,14 +8,14 @@ const assert = require('chai').assert
 const sinon = require('sinon')
 const fs = require('fs').promises
 
-const SendAsset = require('../../../src/commands/send')
+const BurnAsset = require('../../../src/commands/burn')
 const AvalancheWallet = require('../../mocks/avax-mock')
 const WalletCreate = require('../../../src/commands/wallet-create')
 const walletCreate = new WalletCreate()
 
 const filename = `${__dirname.toString()}/../../../.wallets/test123.json`
 
-describe('send', () => {
+describe('burn', () => {
   let uut
   let sandbox
 
@@ -24,7 +24,7 @@ describe('send', () => {
   })
   beforeEach(async () => {
     sandbox = sinon.createSandbox()
-    uut = new SendAsset()
+    uut = new BurnAsset()
   })
 
   afterEach(() => {
@@ -34,10 +34,10 @@ describe('send', () => {
     await fs.rm(filename)
   })
 
-  describe('#sendAsset()', () => {
+  describe('#burnAsset()', () => {
     it('should exit with error status if called without a filename.', async () => {
       try {
-        await uut.sendAsset(undefined, undefined)
+        await uut.burnAsset(undefined, undefined)
 
         assert.fail('Unexpected result')
       } catch (err) {
@@ -51,7 +51,7 @@ describe('send', () => {
 
     it('should exit with error status if the given wallet doesnt exist', async () => {
       try {
-        await uut.sendAsset(`${__dirname.toString()}/../../../.wallets/test567.json`)
+        await uut.burnAsset(`${__dirname.toString()}/../../../.wallets/test567.json`)
 
         assert.fail('Unexpected result')
       } catch (err) {
@@ -70,8 +70,7 @@ describe('send', () => {
         const flags = {
           name: 'test123',
           amount: 3,
-          assetID: '3LxJXtS6FYkSpcRLPu1EeGZDdFBY41J4YxH1Nwohxs2evUo1U',
-          sendAddr: mockWallet.walletInfo.address
+          assetID: '3LxJXtS6FYkSpcRLPu1EeGZDdFBY41J4YxH1Nwohxs2evUo1U'
         }
 
         // Mock methods that will be tested elsewhere.
@@ -79,7 +78,7 @@ describe('send', () => {
           .stub(uut.walletBalances, 'getBalances')
           .resolves(mockWallet)
 
-        await uut.sendAsset(filename, flags)
+        await uut.burnAsset(filename, flags)
 
         assert.fail('Unexpected result')
       } catch (err) {
@@ -91,14 +90,13 @@ describe('send', () => {
       }
     })
 
-    it('should send the asset to the given address and return the txid.', async () => {
+    it('should burn the given amount and return the txid.', async () => {
       const mockWallet = new AvalancheWallet()
 
       const flags = {
         name: 'test123',
-        amount: 3,
-        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        sendAddr: mockWallet.walletInfo.address
+        amount: 1.5,
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
       }
 
       // Mock methods that will be tested elsewhere.
@@ -106,38 +104,13 @@ describe('send', () => {
         .stub(uut.walletBalances, 'getBalances')
         .resolves(mockWallet)
 
-      const result = await uut.sendAsset(filename, flags)
+      const result = await uut.burnAsset(filename, flags)
 
       assert.isString(result)
-      assert.equal(result, 'someid')
+      assert.equal(result, 'someburnid')
       assert.property(mockWallet, 'outputs')
-      assert.equal(mockWallet.outputs[0].address, mockWallet.walletInfo.address)
-      assert.equal(mockWallet.outputs[0].amount, 300)
+      assert.equal(mockWallet.outputs[0].amount, 150)
       assert.equal(mockWallet.outputs[0].assetID, '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5')
-    })
-
-    it('should send Avax if the assetID is not especified', async () => {
-      const mockWallet = new AvalancheWallet()
-
-      const flags = {
-        name: 'test123',
-        amount: 0.1,
-        sendAddr: mockWallet.walletInfo.address
-      }
-
-      // Mock methods that will be tested elsewhere.
-      sandbox
-        .stub(uut.walletBalances, 'getBalances')
-        .resolves(mockWallet)
-
-      const result = await uut.sendAsset(filename, flags)
-
-      assert.isString(result)
-      assert.equal(result, 'someid')
-      assert.property(mockWallet, 'outputs')
-      assert.equal(mockWallet.outputs[0].address, mockWallet.walletInfo.address)
-      assert.equal(mockWallet.outputs[0].amount, 100000000)
-      assert.equal(mockWallet.outputs[0].assetID, undefined)
     })
   })
 
@@ -146,7 +119,7 @@ describe('send', () => {
       const flags = {
         name: 'test123',
         amount: 1,
-        sendAddr: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
       }
       assert.equal(uut.validateFlags(flags), true, 'return true')
     })
@@ -172,12 +145,12 @@ describe('send', () => {
       } catch (err) {
         assert.include(
           err.message,
-          'You must specify the asset quantity with the -q flag',
+          'You must specify a asset amount with the -q flag',
           'Expected error message.'
         )
       }
     })
-    it('validateFlags() should throw error if sendAddr is not supplied.', () => {
+    it('validateFlags() should throw error if asset id is not supplied.', () => {
       try {
         const flags = {
           name: 'test123',
@@ -187,7 +160,7 @@ describe('send', () => {
       } catch (err) {
         assert.include(
           err.message,
-          'You must specify a send-to address with the -a flag.',
+          'You must specify an asset Id with the -t flag',
           'Expected error message.'
         )
       }
@@ -210,12 +183,11 @@ describe('send', () => {
 
       assert.equal(result, 0)
     })
-    it('should return 0 , if the sendAsset fails', async () => {
+    it('should return 0, if the burnAsset fails', async () => {
       const flags = {
         name: 'test123',
         amount: 3,
-        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        sendAddr: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
       }
 
       // Mock methods that will be tested elsewhere.
@@ -236,8 +208,7 @@ describe('send', () => {
       const flags = {
         name: 'test123',
         amount: 3,
-        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        sendAddr: mockWallet.walletInfo.address
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
       }
 
       // Mock methods that will be tested elsewhere.
@@ -251,6 +222,9 @@ describe('send', () => {
       const result = await uut.run()
 
       assert.isString(result)
+      assert.property(mockWallet, 'outputs')
+      assert.equal(mockWallet.outputs[0].amount, 300)
+      assert.equal(mockWallet.outputs[0].assetID, '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5')
     })
   })
 })
