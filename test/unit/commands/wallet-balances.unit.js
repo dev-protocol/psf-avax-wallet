@@ -78,17 +78,44 @@ describe('wallet-balances', () => {
       assert.property(result.utxos, 'assets')
     })
 
+    it('should return wallet instance with updated UTXOs and assets with only the private key', async () => {
+      // mock data
+      const walletInfo = new AvalancheWallet().walletInfo
+      walletInfo.mnemonic = null
+
+      uut.AvaxWallet = AvalancheWallet
+      sandbox.stub(uut.walletUtil, 'openWallet').returns({ wallet: walletInfo })
+
+      const result = await uut.getBalances(filename)
+
+      assert.property(result, 'walletInfo')
+      assert.property(result, 'utxos')
+      assert.property(result.utxos, 'utxoStore')
+      assert.property(result.utxos, 'assets')
+    })
+
     // Dev Note: Because this test manipulates environment variables that effect
     // the mock data, this test should come last.
+    it('should pass after trying to set the utxos twice', async () => {
+      process.env.NO_UTXO = true
+
+      uut.AvaxWallet = AvalancheWallet
+
+      const result = await uut.getBalances(filename)
+
+      assert.property(result, 'walletInfo')
+      assert.property(result, 'utxos')
+      assert.property(result.utxos, 'utxoStore')
+      assert.property(result.utxos, 'assets')
+    })
+
     it('should throw an error on network error', async () => {
       try {
-        // Mock dependencies
         uut.AvaxWallet = AvalancheWallet
+        process.env.NO_UPDATE = true
         process.env.NO_UTXO = true
 
         await uut.getBalances(filename)
-
-        process.env.NO_UTXO = false
 
         assert.fail('Unexpected result')
       } catch (err) {

@@ -3,7 +3,6 @@
 // Public NPM libraries
 const AvaxWallet = require('minimal-avax-wallet/index')
 const Table = require('cli-table')
-const collect = require('collect.js')
 
 // Local libraries
 const fs = require('fs')
@@ -47,7 +46,7 @@ class WalletBalances extends Command {
   async getBalances (filename) {
     try {
       // Load the wallet file.
-      const walletJSON = require(filename)
+      const walletJSON = await this.walletUtil.openWallet(filename)
       const walletData = walletJSON.wallet
 
       // Configure the minimal-avax-wallet library.
@@ -116,61 +115,6 @@ class WalletBalances extends Command {
       console.error('Error in displayBalance()')
       throw err
     }
-  }
-
-  // TODO: remove this function once all the BCH/SLP code has been updated
-  getTokenBalances (tokenUtxos) {
-    // console.log('tokenUtxos: ', tokenUtxos)
-
-    const tokens = []
-    const tokenIds = []
-
-    // Summarized token data into an array of token UTXOs.
-    for (let i = 0; i < tokenUtxos.length; i++) {
-      const thisUtxo = tokenUtxos[i]
-
-      const thisToken = {
-        ticker: thisUtxo.tokenTicker,
-        tokenId: thisUtxo.tokenId,
-        qty: parseFloat(thisUtxo.tokenQty)
-      }
-
-      tokens.push(thisToken)
-
-      tokenIds.push(thisUtxo.tokenId)
-    }
-
-    // Create a unique collection of tokenIds
-    const collection = collect(tokenIds)
-    let unique = collection.unique()
-    unique = unique.toArray()
-
-    // Add up any duplicate entries.
-    // The finalTokenData array contains unique objects, one for each token,
-    // with a total quantity of tokens for the entire wallet.
-    const finalTokenData = []
-    for (let i = 0; i < unique.length; i++) {
-      const thisTokenId = unique[i]
-
-      const thisTokenData = {
-        tokenId: thisTokenId,
-        qty: 0
-      }
-
-      // Add up the UTXO quantities for the current token ID.
-      for (let j = 0; j < tokens.length; j++) {
-        const thisToken = tokens[j]
-
-        if (thisTokenId === thisToken.tokenId) {
-          thisTokenData.ticker = thisToken.ticker
-          thisTokenData.qty += thisToken.qty
-        }
-      }
-
-      finalTokenData.push(thisTokenData)
-    }
-
-    return finalTokenData
   }
 
   // Validate the proper flags are passed in.

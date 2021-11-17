@@ -50,7 +50,7 @@ describe('wallet-addrs', () => {
 
         assert.fail('Unexpected code path')
       } catch (err) {
-        assert.include(err.message, 'wallet with the given name doent exists')
+        assert.include(err.message, 'Could not open')
       }
     })
   })

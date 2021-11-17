@@ -17,6 +17,19 @@ class WalletUtil {
     _this = this
   }
 
+  // Open a wallet by file name.
+  openWallet (filename) {
+    try {
+      // Delete the cached copy of the wallet. This allows testing of list-wallets.
+      delete require.cache[require.resolve(filename)]
+
+      const walletInfo = require(filename)
+      return walletInfo
+    } catch (err) {
+      throw new Error(`Could not open ${filename}`)
+    }
+  }
+
   // Save the wallet data into a .json text file.
   async saveWallet (filename, walletData) {
     await _this.fs.writeFile(filename, JSON.stringify(walletData, null, 2))

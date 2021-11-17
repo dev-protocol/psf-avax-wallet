@@ -21,6 +21,7 @@ class SendAsset extends Command {
     this.walletUtil = new WalletUtil()
     this.AvaxWallet = AvaxWallet
     this.walletBalances = new WalletBalances()
+    this.avaxID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
   }
 
   async run () {
@@ -59,7 +60,7 @@ class SendAsset extends Command {
       const walletData = await this.walletBalances.getBalances(filename)
 
       const asset = walletData.utxos.assets.find(item => {
-        return (!flags.assetID && item.assetID === 'AVAX') || item.assetID === flags.assetID
+        return (!flags.assetID && item.assetID === this.avaxID) || item.assetID === flags.assetID
       })
 
       if (!asset) {
