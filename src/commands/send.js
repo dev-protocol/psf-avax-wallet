@@ -37,7 +37,7 @@ class SendAsset extends Command {
 
       return txid
     } catch (err) {
-      console.log('Error in send.js/sendAsset(): ', err.message)
+      console.log('Error in send.js/run(): ', err.message)
 
       return 0
     }
