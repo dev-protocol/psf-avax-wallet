@@ -38,14 +38,7 @@ class WalletAddrs extends Command {
 
   async getAddrs (filename) {
     try {
-      // check if wallet exists
-      const exists = await this.walletUtil.walletExists(filename)
-      if (!exists) {
-        throw new Error('wallet with the given name doent exists')
-      }
-
-      // Load the wallet file.
-      const walletJSON = require(filename)
+      const walletJSON = await this.walletUtil.openWallet(filename)
       const walletData = walletJSON.wallet
 
       this.log(' ')

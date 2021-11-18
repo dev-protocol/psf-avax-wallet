@@ -47,7 +47,7 @@ class AvalancheWallet {
         ],
         assets: [
           {
-            assetID: 'AVAX',
+            assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
             name: 'Avalanche',
             symbol: 'AVAX',
             denomination: 9,
@@ -66,6 +66,30 @@ class AvalancheWallet {
   }
 
   async getUtxos () {
+    if (process.env.NO_UPDATE) {
+      return []
+    }
+
+    this.utxos = {
+      utxoStore: [
+        {
+          txid: 'Fy3NFR7DrriWWNBpogrsgXoAmZpdYcoRHz6n7uW17nRHBVcm3',
+          outputIdx: '00000000',
+          amount: 18000000,
+          assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
+          typeID: 7
+        }
+      ],
+      assets: [
+        {
+          assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          denomination: 9,
+          amount: 18000000
+        }
+      ]
+    }
     return []
   }
 
