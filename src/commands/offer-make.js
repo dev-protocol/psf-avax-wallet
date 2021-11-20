@@ -147,7 +147,7 @@ class OfferMake extends Command {
   }
 }
 
-OfferMake.description = 'Display the balances of the wallet'
+OfferMake.description = 'Create an offer to \'sell\' tokens in exchange for a given amount of AVAX'
 
 OfferMake.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' }),

@@ -1,5 +1,5 @@
 /*
-  Unit tests for the send command.
+  Unit tests for the offer-make command.
 */
 
 'use strict'
@@ -200,7 +200,7 @@ describe('offer-make', () => {
       assert.equal(result, 0)
     })
 
-    it('should return 0, if the sendAsset fails', async () => {
+    it('should return 0, if the offerMake method fails', async () => {
       const flags = {
         name: 'test123',
         amount: '1',
