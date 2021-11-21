@@ -23,7 +23,9 @@ class OfferMake extends Command {
       // Validate input flags
       this.validateFlags(flags)
 
-      const filename = `${__dirname.toString()}/../../.wallets/${flags.name}.json`
+      const filename = `${__dirname.toString()}/../../.wallets/${
+        flags.name
+      }.json`
       const amount = flags.amount
       const avax = flags.avax
       const assetID = flags.assetID
@@ -43,7 +45,9 @@ class OfferMake extends Command {
     try {
       const walletData = await this.walletBalances.getBalances(filename)
 
-      const asset = walletData.utxos.assets.find(item => item.assetID === assetID)
+      const asset = walletData.utxos.assets.find(
+        (item) => item.assetID === assetID
+      )
 
       if (!asset) {
         throw new Error(
@@ -56,7 +60,7 @@ class OfferMake extends Command {
       avaxAmount = parseFloat(avaxAmount) * Math.pow(10, 9) // 1 AVAX = 1x10^9 nAVAX
 
       if (asset.amount < assetAmount) {
-        throw new Error(`Not enough assets (${asset.name}) to be send`)
+        throw new Error(`Not enough assets (${asset.name}) to be sent`)
       }
 
       const address = walletData.walletInfo.address
@@ -96,7 +100,9 @@ class OfferMake extends Command {
       // Build the transcation
       const partialTx = new walletData.utxos.avm.BaseTx(
         walletData.ava.getNetworkID(),
-        walletData.bintools.cb58Decode(walletData.tokens.xchain.getBlockchainID()),
+        walletData.bintools.cb58Decode(
+          walletData.tokens.xchain.getBlockchainID()
+        ),
         outputs,
         inputs,
         Buffer.from('Tx created from offer make command')
@@ -146,7 +152,10 @@ OfferMake.description = 'Display the balances of the wallet'
 OfferMake.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' }),
   assetID: flags.string({ char: 't', description: 'Asset ID' }),
-  amount: flags.string({ char: 'q', description: 'Quantity of assets to send' }),
+  amount: flags.string({
+    char: 'q',
+    description: 'Quantity of assets to send'
+  }),
   avax: flags.string({ char: 'a', description: 'Quantity of avax to request' })
 }
 
