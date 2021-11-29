@@ -1,3 +1,24 @@
+/*
+  This command is the first of three commands to interact with the DEX.
+  offer-make creates a new offer in the open market to sell a token for AVAX.
+
+  (Dev Note: CT 11/29/21: not sure if you can do a 'buy' order with this code)
+
+  See this Issue for background info:
+  https://github.com/Permissionless-Software-Foundation/psf-avax-wallet/issues/4
+
+  This command generates an JSON object that contains two properties:
+  - txHex - is the transaction hex of a partial transaction. It contains the
+    following:
+    - Input 1: The token UTXO being offered for sale.
+    - Output 1: The AVAX sent to the seller of the token.
+    - Output 2: The change for the unsold tokens, going to the seller.
+  - addrReferences - Contains additional information about the UTXO for sale
+    that gets lost when compiling the partial transaction to hex:
+    - key - TXID of the UTXO for sale.
+    - value - The address controlling the UTXO.
+*/
+
 'use strict'
 
 // Local libraries
@@ -55,7 +76,7 @@ class OfferMake extends Command {
         )
       }
 
-      // parse it from base0 to the whole number (the equivalent of sats in BCH)
+      // parse it from base-10 to the whole number (the equivalent of sats in BCH)
       assetAmount = parseFloat(assetAmount) * Math.pow(10, asset.denomination)
       avaxAmount = parseFloat(avaxAmount) * Math.pow(10, 9) // 1 AVAX = 1x10^9 nAVAX
 
@@ -68,6 +89,7 @@ class OfferMake extends Command {
       // arrange the inputs
       const addrReferences = {}
       const inputs = []
+
       for (const item of walletData.utxos.utxoStore) {
         if (item.assetID !== assetID) {
           continue
@@ -147,7 +169,20 @@ class OfferMake extends Command {
   }
 }
 
-OfferMake.description = 'Create an offer to \'sell\' tokens in exchange for a given amount of AVAX'
+OfferMake.description = `
+Create an offer to 'sell' tokens in exchange for a given amount of AVAX
+
+This command generates an JSON object that contains two properties:
+- txHex - is the transaction hex of a partial transaction. It contains the
+  following:
+  - Input 1: The token UTXO being offered for sale.
+  - Output 1: The AVAX sent to the seller of the token.
+  - Output 2: The change for the unsold tokens, going to the seller.
+- addrReferences - Contains additional information about the UTXO for sale
+  that gets lost when compiling the partial transaction to hex:
+  - key - TXID of the UTXO for sale.
+  - value - The address controlling the UTXO.
+`
 
 OfferMake.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' }),
