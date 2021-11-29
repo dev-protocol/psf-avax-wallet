@@ -9,8 +9,7 @@ const sinon = require('sinon')
 const fs = require('fs').promises
 
 const OfferMake = require('../../../src/commands/offer-make')
-const AvaxWallet = require('minimal-avax-wallet')
-const { OfferMakeWallet } = require('../../mocks/avax-offer-mock')
+const { AliceWallet } = require('../../mocks/avax-offer-mock')
 const WalletCreate = require('../../../src/commands/wallet-create')
 const walletCreate = new WalletCreate()
 
@@ -26,6 +25,7 @@ describe('offer-make', () => {
   beforeEach(async () => {
     sandbox = sinon.createSandbox()
     uut = new OfferMake()
+    sandbox.stub(uut, 'log').returns(true)
   })
 
   afterEach(() => {
@@ -38,14 +38,13 @@ describe('offer-make', () => {
   describe('#offerMake()', () => {
     it('should exit with error status if the wallet doesnt hold the asset', async () => {
       try {
-        const mockWallet = new AvaxWallet(undefined, { noUpdate: true })
-        await mockWallet.walletInfoPromise
-
+        const aliceWallet = await AliceWallet()
         const assetID = '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
+        aliceWallet.utxos.assets = []
 
         sandbox
           .stub(uut.walletBalances, 'getBalances')
-          .resolves(mockWallet)
+          .resolves(aliceWallet)
 
         await uut.offerMake(filename, assetID, 1, 0.02)
         assert.fail('Unexpected result')
@@ -61,18 +60,12 @@ describe('offer-make', () => {
 
     it('should exit with error status if the wallet doesnt have enough assets to send', async () => {
       try {
-        const mockWallet = new AvaxWallet(undefined, { noUpdate: true })
-        await mockWallet.walletInfoPromise
-
+        const aliceWallet = await AliceWallet()
         const assetID = '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
-
-        mockWallet.walletInfo = OfferMakeWallet.walletInfo
-        mockWallet.utxos.utxoStore = OfferMakeWallet.utxos
-        mockWallet.utxos.assets = OfferMakeWallet.assets
 
         sandbox
           .stub(uut.walletBalances, 'getBalances')
-          .resolves(mockWallet)
+          .resolves(aliceWallet)
 
         await uut.offerMake(filename, assetID, 1.1, 0.02)
         assert.fail('Unexpected result')
@@ -88,25 +81,19 @@ describe('offer-make', () => {
 
     it('should return the transaction hex and the address reference object', async () => {
       try {
-        const mockWallet = new AvaxWallet(undefined, { noUpdate: true })
-        await mockWallet.walletInfoPromise
-
+        const aliceWallet = await AliceWallet()
         const assetID = '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
-
-        mockWallet.walletInfo = OfferMakeWallet.walletInfo
-        mockWallet.utxos.utxoStore = OfferMakeWallet.utxos
-        mockWallet.utxos.assets = OfferMakeWallet.assets
 
         sandbox
           .stub(uut.walletBalances, 'getBalances')
-          .resolves(mockWallet)
+          .resolves(aliceWallet)
 
         const res = await uut.offerMake(filename, assetID, 1, 0.02)
 
         assert.hasAllKeys(res, ['txHex', 'addrReferences'])
         const references = JSON.parse(res.addrReferences)
         const [address] = Object.values(references)
-        assert.equal(address, mockWallet.walletInfo.address)
+        assert.equal(address, aliceWallet.walletInfo.address)
       } catch (err) {
         console.log(err)
         assert.fail('Unexpected result')
@@ -220,12 +207,7 @@ describe('offer-make', () => {
     })
 
     it('should run the run() function', async () => {
-      const mockWallet = new AvaxWallet(undefined, { noUpdate: true })
-      await mockWallet.walletInfoPromise
-
-      mockWallet.walletInfo = OfferMakeWallet.walletInfo
-      mockWallet.utxos.utxoStore = OfferMakeWallet.utxos
-      mockWallet.utxos.assets = OfferMakeWallet.assets
+      const aliceWallet = await AliceWallet()
 
       const flags = {
         name: 'test123',
@@ -237,7 +219,7 @@ describe('offer-make', () => {
       // Mock methods that will be tested else where.
       sandbox
         .stub(uut.walletBalances, 'getBalances')
-        .resolves(mockWallet)
+        .resolves(aliceWallet)
       sandbox.stub(uut, 'parse').returns({ flags: flags })
 
       const result = await uut.run()

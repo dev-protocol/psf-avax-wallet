@@ -123,7 +123,7 @@ class WalletUtil {
    * @param {Object} reference
    * @param {Credential} credentials
    */
-  partialySignTx (walletData, tx, keychain, reference = {}, oldCredentials = []) {
+  partialySignTx (walletData, tx, keychain, reference, oldCredentials = []) {
     const txBuffer = tx.toBuffer()
     const msg = Buffer.from(this.createHash('sha256').update(txBuffer).digest())
     const credentials = [...oldCredentials]

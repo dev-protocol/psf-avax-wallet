@@ -94,7 +94,6 @@ class OfferTake extends Command {
 
       // Add up all the asset inputs
       for (const input of inputs) {
-        console.log(walletData.bintools.cb58Encode(input.getAssetID()))
         if (input.getAssetID().toString('hex') !== assetID.toString('hex')) {
           continue
         }
