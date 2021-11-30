@@ -2,21 +2,34 @@
   This command is the first of three commands to interact with the DEX.
   offer-make creates a new offer in the open market to sell a token for AVAX.
 
-  (Dev Note: CT 11/29/21: not sure if you can do a 'buy' order with this code)
+  At present, this command is used to help with debugging the avax-dex:
+  https://github.com/Permissionless-Software-Foundation/avax-dex
 
-  See this Issue for background info:
-  https://github.com/Permissionless-Software-Foundation/psf-avax-wallet/issues/4
+  Example:
+  Alice offers 1 token for sale at 0.002 AVAX.
+  ./bin/run offer-make -n alice -a 0.002 -q 1 -t 2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si
 
   This command generates an JSON object that contains two properties:
   - txHex - is the transaction hex of a partial transaction. It contains the
     following:
-    - Input 1: The token UTXO being offered for sale.
-    - Output 1: The AVAX sent to the seller of the token.
-    - Output 2: The change for the unsold tokens, going to the seller.
+    - Input 1: Alice's token UTXO being offered for sale (unsigned).
+    - Output 1: The AVAX sent to Alice.
+    - Output 2: The change for the unsold tokens, going back to Alice
   - addrReferences - Contains additional information about the UTXO for sale
     that gets lost when compiling the partial transaction to hex:
-    - key - TXID of the UTXO for sale.
-    - value - The address controlling the UTXO.
+    - key1 - TXID of the UTXO for sale.
+    - value1 - The address controlling the UTXO.
+
+  Example output:
+  Offer made: {
+    "txHex": "00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000001e8480000000000000000000000001000000015d72133454d4351d6ba784b22183c947ef153d0dcf56299d91d7a12b83650ed5ffaacaac3d03a0f1ee1aca8193e76423e49265a8000000070000000000000384000000000000000000000001000000015d72133454d4351d6ba784b22183c947ef153d0d000000018f60207cf0073e9cab6fb39a9553585fc923d328e0f67d73d973c4c4731962c200000001cf56299d91d7a12b83650ed5ffaacaac3d03a0f1ee1aca8193e76423e49265a80000000500000000000003e8000000010000000000000022547820637265617465642066726f6d206f66666572206d616b6520636f6d6d616e64",
+    "addrReferences": "{\"269LQd4Jjdp41j35bavWWGfSud2FuenEDQWP8nwq7LZ69HUy8L\":\"X-avax1t4epxdz56s6366a8sjezrq7fglh320gd2n7wh3\"}"
+  }
+
+  Dev Notes:
+  - CT 11/29/21: not sure if you can do a 'buy' order with this code)
+  - See this Issue for background info:
+    https://github.com/Permissionless-Software-Foundation/psf-avax-wallet/issues/4
 */
 
 'use strict'
