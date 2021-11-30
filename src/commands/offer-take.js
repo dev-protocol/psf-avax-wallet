@@ -10,7 +10,7 @@
   Example:
   This command takes the output of offer-make as its input.
   Bob accepts Alice's offer:
-  ./bin/run offer-take -n test01 -h "00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000001e8480000000000000000000000001000000015d72133454d4351d6ba784b22183c947ef153d0dcf56299d91d7a12b83650ed5ffaacaac3d03a0f1ee1aca8193e76423e49265a8000000070000000000000384000000000000000000000001000000015d72133454d4351d6ba784b22183c947ef153d0d000000018f60207cf0073e9cab6fb39a9553585fc923d328e0f67d73d973c4c4731962c200000001cf56299d91d7a12b83650ed5ffaacaac3d03a0f1ee1aca8193e76423e49265a80000000500000000000003e8000000010000000000000022547820637265617465642066726f6d206f66666572206d616b6520636f6d6d616e64" -r "{\"269LQd4Jjdp41j35bavWWGfSud2FuenEDQWP8nwq7LZ69HUy8L\":\"X-avax1t4epxdz56s6366a8sjezrq7fglh320gd2n7wh3\"}"
+  ./bin/run offer-take -n bob -h "00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000001e8480000000000000000000000001000000015d72133454d4351d6ba784b22183c947ef153d0dcf56299d91d7a12b83650ed5ffaacaac3d03a0f1ee1aca8193e76423e49265a8000000070000000000000384000000000000000000000001000000015d72133454d4351d6ba784b22183c947ef153d0d000000018f60207cf0073e9cab6fb39a9553585fc923d328e0f67d73d973c4c4731962c200000001cf56299d91d7a12b83650ed5ffaacaac3d03a0f1ee1aca8193e76423e49265a80000000500000000000003e8000000010000000000000022547820637265617465642066726f6d206f66666572206d616b6520636f6d6d616e64" -r "{\"269LQd4Jjdp41j35bavWWGfSud2FuenEDQWP8nwq7LZ69HUy8L\":\"X-avax1t4epxdz56s6366a8sjezrq7fglh320gd2n7wh3\"}"
 
   This command will add Bob's AVAX UTXO as input to pay Alice and the
   transaction fee. It will also add Bob's address as the output for the tokens.
@@ -281,7 +281,12 @@ class OfferTake extends Command {
   }
 }
 
-OfferTake.description = "Take an existing offer to 'buy' the token with AVAX"
+OfferTake.description = `
+This command is the second of three commands to interact with the DEX.
+offer-take completes the partial transaction created by offer-make. It
+produces a fully-formed (but partially-signed) transaction. The tx is then
+sent back to the first party, to review and complete the transaction.
+`
 
 OfferTake.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' }),
