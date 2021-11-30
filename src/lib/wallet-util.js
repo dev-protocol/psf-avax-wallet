@@ -131,7 +131,9 @@ class WalletUtil {
     const inputs = tx.getTransaction().getIns()
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i]
-      const cred = this.avm.SelectCredentialClass(input.getInput().getCredentialID())
+      const cred = this.avm.SelectCredentialClass(
+        input.getInput().getCredentialID()
+      )
 
       const inputid = input.getUTXOID()
 
@@ -143,10 +145,14 @@ class WalletUtil {
         sig.fromBuffer(signval)
         cred.addSignature(sig)
 
-        console.log(`input ${i}: Successfully signed, ( ${inputid} signed with ${reference[inputid]} )`)
+        console.log(
+          `\ninput ${i}: Successfully signed, ( ${inputid} signed with ${reference[inputid]} )`
+        )
         credentials[i] = cred
       } catch (error) {
-        console.log(`input ${i}: Skipping, address is not in the keychain, ( ${inputid} )`)
+        console.log(
+          `\ninput ${i}: Skipping, address is not in the keychain, ( ${inputid} )`
+        )
 
         if (!credentials[i]) {
           credentials[i] = cred
