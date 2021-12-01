@@ -6,6 +6,7 @@ const Table = require('cli-table')
 
 // Local libraries
 const fs = require('fs')
+const networks = require('../lib/networks')
 const WalletUtil = require('../lib/wallet-util')
 
 const { Command, flags } = require('@oclif/command')
@@ -54,9 +55,15 @@ class WalletBalances extends Command {
         interface: 'rest-api'
         // interface: 'json-rpc', commented out for now
       }
+      // fuji API fixed
+      if (walletData.networkID === networks.fuji.networkID) {
+        advancedConfig.host = networks.fuji.host
+        advancedConfig.port = networks.fuji.post
+        advancedConfig.networkID = networks.fuji.networkID
+      }
+
       const privKey = walletData.mnemonic || walletData.privateKey
       this.avaxWallet = new this.AvaxWallet(privKey, advancedConfig)
-
       // Wait for the wallet to initialize and retrieve UTXO data
       await this.avaxWallet.walletInfoPromise
 
@@ -86,6 +93,7 @@ class WalletBalances extends Command {
     try {
       const table = new Table({ head: ['ID', 'Name', 'Quantity', 'Denomination'] })
 
+      console.log(`\nWallet: ${walletData.walletInfo.address}`)
       console.log('\nAssets:')
       const assets = walletData.utxos.assets
       for (const asset of assets) {
