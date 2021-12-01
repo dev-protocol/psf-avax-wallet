@@ -74,7 +74,7 @@ describe('wallet-create', () => {
     it('should create a testnet wallet file with the given name', async () => {
       sandbox.stub(uut.walletUtil, 'saveWallet').returns(true)
 
-      const walletData = await uut.createWallet(filename, 'testnet', true)
+      const walletData = await uut.createWallet(filename, 'testnet', null, true)
 
       assert.property(walletData, 'type')
       assert.property(walletData, 'mnemonic')
