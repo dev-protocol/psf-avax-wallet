@@ -1,4 +1,6 @@
-'use strict'
+  'use strict'
+
+const networks = require('../lib/networks')
 
 // Public NPM libraries
 const AvaxWallet = require('minimal-avax-wallet/index')
@@ -28,7 +30,7 @@ class WalletCreate extends Command {
 
       if (!flags.description) flags.description = ''
 
-      const result = await this.createWallet(filename, flags.description, flags.priv)
+      const result = await this.createWallet(filename, flags.description, flags.priv, flags.testnet)
       // console.log('result: ', result)
 
       return result
@@ -41,7 +43,7 @@ class WalletCreate extends Command {
   }
 
   // Create a new wallet file.
-  async createWallet (filename, desc, privateKey) {
+  async createWallet (filename, desc, privateKey, testnet) {
     try {
       if (!filename || typeof filename !== 'string') {
         throw new Error('filename required.')
@@ -55,11 +57,9 @@ class WalletCreate extends Command {
 
       if (!desc) desc = ''
 
+      let advancedConfig = testnet ? networks.fuji : networks.mainnet
       // Configure the minimal-slp-wallet library to use the JSON RPC over IPFS.
-      const advancedConfig = {
-        interface: 'json-rpc',
-        noUpdate: true
-      }
+      advancedConfig = { ...advancedConfig, interface: 'json-rpc', noUpdate: true }
 
       // Wait for the wallet to be created.
       this.avaxWallet = new this.AvaxWallet(privateKey, advancedConfig)
@@ -70,6 +70,7 @@ class WalletCreate extends Command {
         wallet: this.avaxWallet.walletInfo
       }
       walletData.wallet.description = desc
+      walletData.wallet.networkID = advancedConfig.networkID
 
       // Write out the basic information into a json file for other apps to use.
       await this.walletUtil.saveWallet(filename, walletData)
@@ -96,8 +97,9 @@ class WalletCreate extends Command {
 WalletCreate.description = 'Generate a new single address Wallet.'
 
 WalletCreate.flags = {
+  testnet: flags.boolean({ char: 't', description: 'Create a testnet wallet' }),
   name: flags.string({ char: 'n', description: 'Name of wallet' }),
-  priv: flags.string({ char: 'k', description: 'key' }),
+  priv: flags.string({ char: 'k', description: 'Private Key' }),
   description: flags.string({
     char: 'd',
     description: 'Description of the wallet'

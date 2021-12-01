@@ -8,6 +8,7 @@
 const AvaxWallet = require('minimal-avax-wallet/index')
 
 // Local libraries
+const networks = require('../lib/networks')
 const WalletUtil = require('../lib/wallet-util')
 const WalletBalances = require('./wallet-balances')
 
@@ -17,11 +18,9 @@ class SendAsset extends Command {
   constructor (argv, config) {
     super(argv, config)
 
-    // Encapsulate dependencies.
     this.walletUtil = new WalletUtil()
     this.AvaxWallet = AvaxWallet
     this.walletBalances = new WalletBalances()
-    this.avaxID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
   }
 
   async run () {
@@ -59,6 +58,15 @@ class SendAsset extends Command {
 
       const walletData = await this.walletBalances.getBalances(filename)
 
+      this.avaxID = networks.mainnet.avaxID
+      if (walletData.ava && walletData.ava.getNetworkID() === networks.fuji.networkID) {
+        this.avaxID = networks.fuji.avaxID
+      }
+      // network id can be in the wallet data too
+      if (walletData.walletInfo && walletData.walletInfo.networkID === networks.fuji.networkID) {
+        this.avaxID = networks.fuji.avaxID
+      }
+
       const asset = walletData.utxos.assets.find(item => {
         return (!flags.assetID && item.assetID === this.avaxID) || item.assetID === flags.assetID
       })
@@ -77,7 +85,10 @@ class SendAsset extends Command {
         amount,
         assetID: flags.assetID
       }]
-
+      // TODO: better way to send AVAX ID to the sender
+      if (walletData.sendAvax) {
+        walletData.sendAvax.avaxID = this.avaxID
+      }
       const txid = await walletData.send(outputs)
       return txid
     } catch (err) {

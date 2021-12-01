@@ -70,11 +70,30 @@ describe('wallet-create', () => {
       assert.property(walletData, 'avax')
       assert.property(walletData, 'description')
     })
+
+    it('should create a testnet wallet file with the given name', async () => {
+      sandbox.stub(uut.walletUtil, 'saveWallet').returns(true)
+
+      const walletData = await uut.createWallet(filename, 'testnet', true)
+
+      assert.property(walletData, 'type')
+      assert.property(walletData, 'mnemonic')
+      assert.property(walletData, 'address')
+      assert.property(walletData, 'privateKey')
+      assert.property(walletData, 'publicKey')
+      assert.property(walletData, 'avax')
+      assert.property(walletData, 'description')
+      assert.equal(walletData.address.substring(0, 6), 'X-fuji')
+    })
   })
 
   describe('#validateFlags()', () => {
     it('validateFlags() should return true if name is supplied.', () => {
       assert.equal(uut.validateFlags({ name: 'test' }), true, 'return true')
+    })
+
+    it('validateFlags() should return true if testnet is supplied.', () => {
+      assert.equal(uut.validateFlags({ name: 'testnet', testnet: true }), true, 'return true')
     })
 
     it('validateFlags() should throw error if name is not supplied.', () => {
