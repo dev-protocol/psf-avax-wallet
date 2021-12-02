@@ -46,7 +46,7 @@ class OfferAccept extends Command {
 
       // Get the wallet with updated UTXO data.
       const txInfo = await this.offerAccept(filename, txHex, referece)
-      this.log(`\nOffer made: ${JSON.stringify(txInfo, null, 2)}`)
+      this.log(`\nOffer completed: ${JSON.stringify(txInfo, null, 2)}`)
       return true
     } catch (err) {
       this.log('Error in run(): ', err)
@@ -91,10 +91,11 @@ class OfferAccept extends Command {
         throw new Error('The transaction is not fully signed')
       }
 
+      const signedHex = signed.toString()
       // Broadcast the transaction.
-      // const txid = await walletData.sendAvax.ar.issueTx(signed)
+      const txid = await walletData.sendAvax.ar.issueTx(signedHex)
 
-      return { txid: 'as' }
+      return { txid }
     } catch (err) {
       this.log('Error in make-offer.js/accept()', err)
       throw err
