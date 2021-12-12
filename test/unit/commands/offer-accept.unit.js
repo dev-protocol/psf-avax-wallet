@@ -170,6 +170,10 @@ describe('offer-accept', () => {
     it('should run the run() function', async () => {
       const aliceWallet = await AliceWallet()
 
+      sandbox
+        .stub(aliceWallet.sendAvax.ar, 'issueTx')
+        .resolves('sometxid')
+
       const flags = {
         name: 'test123',
         txHex: OfferTakeTx.txHex,
