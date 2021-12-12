@@ -77,7 +77,7 @@ class OfferTake extends Command {
 
       // Get the wallet with updated UTXO data.
       const txInfo = await this.offerTake(filename, txHex, referece)
-      this.log(`\nOffer made: ${JSON.stringify(txInfo, null, 2)}`)
+      this.log(`\nOffer taken: ${JSON.stringify(txInfo, null, 2)}`)
       return true
     } catch (err) {
       this.log('Error in run(): ', err)
