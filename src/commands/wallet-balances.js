@@ -28,7 +28,9 @@ class WalletBalances extends Command {
       // Validate input flags
       this.validateFlags(flags)
 
-      const filename = `${__dirname.toString()}/../../.wallets/${flags.name}.json`
+      const filename = `${__dirname.toString()}/../../.wallets/${
+        flags.name
+      }.json`
 
       // Get the wallet with updated UTXO data.
       const walletData = await this.getBalances(filename)
@@ -76,10 +78,18 @@ class WalletBalances extends Command {
           throw new Error('UTXOs failed to update. Try again.')
         }
       }
+      // console.log(
+      //   `this.avaxWallet.utxos.utxoStore: ${JSON.stringify(
+      //     this.avaxWallet.utxos.utxoStore,
+      //     null,
+      //     2
+      //   )}`
+      // )
 
       // fetch balance of assets as well
       const assets = await this.avaxWallet.listAssets()
       this.avaxWallet.utxos.assets = assets
+      // console.log(`assets: ${JSON.stringify(assets, null, 2)}`)
 
       return this.avaxWallet
     } catch (err) {
@@ -91,13 +101,15 @@ class WalletBalances extends Command {
   // Take the updated wallet data and display it on the screen.
   displayBalance (walletData, flags = {}) {
     try {
-      const table = new Table({ head: ['ID', 'Name', 'Quantity', 'Denomination'] })
+      const table = new Table({
+        head: ['ID', 'Name', 'Quantity', 'Denomination']
+      })
 
       console.log(`\nWallet: ${walletData.walletInfo.address}`)
       console.log('\nAssets:')
       const assets = walletData.utxos.assets
       for (const asset of assets) {
-        const amount = asset.amount * Math.pow(10, -(+asset.denomination))
+        const amount = asset.amount * Math.pow(10, -+asset.denomination)
         table.push([
           asset.assetID,
           asset.name,
