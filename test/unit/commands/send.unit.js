@@ -101,6 +101,10 @@ describe('send', () => {
         sendAddr: mockWallet.walletInfo.address
       }
 
+      const nftStub = sandbox.stub(mockWallet, 'sendNFT')
+      const antStub = sandbox.stub(mockWallet, 'send')
+      antStub.resolves('someid')
+
       // Mock methods that will be tested elsewhere.
       sandbox
         .stub(uut.walletBalances, 'getBalances')
@@ -110,10 +114,12 @@ describe('send', () => {
 
       assert.isString(result)
       assert.equal(result, 'someid')
-      assert.property(mockWallet, 'outputs')
-      assert.equal(mockWallet.outputs[0].address, mockWallet.walletInfo.address)
-      assert.equal(mockWallet.outputs[0].amount, 300)
-      assert.equal(mockWallet.outputs[0].assetID, '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5')
+
+      const output = antStub.args[0][0][0] // first output argument, which is first item, on first call
+      assert.equal(output.address, mockWallet.walletInfo.address)
+      assert.equal(output.amount, 300)
+      assert.equal(output.assetID, '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5')
+      assert.equal(nftStub.notCalled, true)
     })
 
     it('should send Avax if the assetID is not especified', async () => {
@@ -125,6 +131,10 @@ describe('send', () => {
         sendAddr: mockWallet.walletInfo.address
       }
 
+      const nftStub = sandbox.stub(mockWallet, 'sendNFT')
+      const antStub = sandbox.stub(mockWallet, 'send')
+      antStub.resolves('someid')
+
       // Mock methods that will be tested elsewhere.
       sandbox
         .stub(uut.walletBalances, 'getBalances')
@@ -134,10 +144,44 @@ describe('send', () => {
 
       assert.isString(result)
       assert.equal(result, 'someid')
-      assert.property(mockWallet, 'outputs')
-      assert.equal(mockWallet.outputs[0].address, mockWallet.walletInfo.address)
-      assert.equal(mockWallet.outputs[0].amount, 100000000)
-      assert.equal(mockWallet.outputs[0].assetID, undefined)
+
+      const output = antStub.args[0][0][0] // first output argument, which is first item, on first call
+
+      assert.equal(output.address, mockWallet.walletInfo.address)
+      assert.equal(output.amount, 100000000)
+      assert.equal(output.assetID, undefined)
+      assert.equal(nftStub.notCalled, true)
+    })
+
+    it('should send the NFT and return the txid.', async () => {
+      const mockWallet = new AvalancheWallet()
+
+      const nftStub = sandbox.stub(mockWallet, 'sendNFT')
+      const antStub = sandbox.stub(mockWallet, 'send')
+      nftStub.resolves('nfttxid')
+
+      const flags = {
+        name: 'test123',
+        amount: '1',
+        assetID: 'CuTnDJAVFSea6VzEj8UXieWmdrANzyFfL3Cge7XyHbT5RsXn1',
+        sendAddr: mockWallet.walletInfo.address
+      }
+
+      // Mock methods that will be tested elsewhere.
+      sandbox
+        .stub(uut.walletBalances, 'getBalances')
+        .resolves(mockWallet)
+
+      const result = await uut.sendAsset(filename, flags)
+
+      assert.isString(result)
+      assert.equal(result, 'nfttxid')
+
+      const output = nftStub.args[0][0][0] // first output argument, which is first item, on first call
+      assert.equal(output.address, mockWallet.walletInfo.address)
+      assert.equal(output.amount, 1)
+      assert.equal(output.assetID, flags.assetID)
+      assert.equal(antStub.notCalled, true)
     })
   })
 

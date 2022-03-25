@@ -89,7 +89,13 @@ class SendAsset extends Command {
       if (walletData.sendAvax) {
         walletData.sendAvax.avaxID = this.avaxID
       }
-      const txid = await walletData.send(outputs)
+
+      let txid
+      if (asset.isNFT) {
+        txid = await walletData.sendNFT(outputs)
+      } else {
+        txid = await walletData.send(outputs)
+      }
       return txid
     } catch (err) {
       console.error('Error in sendAsset()')
@@ -125,7 +131,11 @@ SendAsset.description = 'Send avalanche native assets and avax'
 
 SendAsset.flags = {
   name: flags.string({ char: 'n', description: 'Name of wallet' }),
-  amount: flags.string({ char: 'q', description: 'asset quantity to send' }),
+  amount: flags.string({
+    char: 'q',
+    description: 'asset quantity to send (not required if sending NFT)',
+    default: '1'
+  }),
   sendAddr: flags.string({ char: 'a', description: 'XChain address to send to' }),
   assetID: flags.string({
     char: 't',

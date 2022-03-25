@@ -59,6 +59,14 @@ class AvalancheWallet {
             symbol: 'ARP',
             denomination: 2,
             amount: 380
+          },
+          {
+            isNFT: true,
+            assetID: 'CuTnDJAVFSea6VzEj8UXieWmdrANzyFfL3Cge7XyHbT5RsXn1',
+            name: 'Bikes',
+            symbol: 'BYK',
+            denomination: 0,
+            amount: 1
           }
         ]
       }
@@ -94,9 +102,11 @@ class AvalancheWallet {
   }
 
   async send (outputs) {
-    // just for the sake of tests
-    this.outputs = outputs
     return 'someid'
+  }
+
+  async sendNFT (outputs) {
+    return 'nfttxid'
   }
 
   async burnTokens (amount, assetID) {
