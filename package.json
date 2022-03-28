@@ -29,7 +29,8 @@
     "minimal-slp-wallet": "4.4.5",
     "semver": "7.3.5",
     "shelljs": "0.8.5",
-    "uuid": "3.4.0"
+    "uuid": "3.4.0",
+    "ws": "^8.5.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.26.0",
